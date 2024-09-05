@@ -4,4 +4,4 @@ beautifulsoup4
 lxml
 cloudinary
 python-dotenv
-
+playwright

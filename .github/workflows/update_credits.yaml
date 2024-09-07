@@ -25,7 +25,7 @@ jobs:
       - name: Fetch team and credits from Node API
         run: |
           echo "progress=Fetching team and credits..." >> $GITHUB_ENV
-          curl -s --request GET ${{ secrets.NODE_API_URL }}/getTeamAndCredits > team_and_credits.json
+          curl -s --request GET ${{ secrets.NODE_API_URL }}wrangleImdbIds > team_and_credits.json
           echo "Step 1 complete: Fetched credits"
 
       # Step 5: Scrape IMDb for new credits
@@ -39,7 +39,7 @@ jobs:
       - name: Update Node API with new credits
         run: |
           echo "progress=Updating database with new credits..." >> $GITHUB_ENV
-          curl -X POST ${{ secrets.NODE_API_URL }}/updateCredits \
+          curl -X POST ${{ secrets.NODE_API_URL }}updateCredits \
           -H "Content-Type: application/json" \
           --data @new_credits.json > api_response.json
           echo "progress=Database updated successfully!" >> $GITHUB_ENV

@@ -1,0 +1,49 @@
+name: Update Movie Credits Workflow
+
+on:
+  workflow_dispatch:  # Triggered manually via the GitHub Actions tab or an API call
+
+jobs:
+  update_credits:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch team and credits from Node API
+        run: |
+          echo "::set-output name=progress::Fetching team and credits..."
+          curl -s --request GET ${{ secrets.NODE_API_URL }}/getTeamAndCredits > team_and_credits.json
+          echo "Step 1 complete: Fetched credits"
+
+      - name: Scrape IMDb for new credits
+        run: |
+          echo "::set-output name=progress::Scraping IMDb for credits..."
+          python update_barn.py team_and_credits.json  # Passing the file to the script
+          echo "Step 2 complete: Scraped IMDb data"
+
+      - name: Update Node API with new credits
+        run: |
+          echo "::set-output name=progress::Updating database with new credits..."
+          curl -X POST ${{ secrets.NODE_API_URL }}/updateCredits \
+          -H "Content-Type: application/json" \
+          --data @new_credits.json > api_response.json
+          echo "::set-output name=progress::Database updated successfully!"
+
+      - name: Set final output with new titles
+        id: set_output
+        run: |
+          echo "::set-output name=new_titles::$(cat api_response.json | jq -r '.newTitles')"
+          echo "::set-output name=progress::Process completed successfully!"
+

@@ -1,7 +1,7 @@
 name: Update Movie Credits Workflow
 
 on:
-  workflow_dispatch:  # Triggered manually via the GitHub Actions tab or an API call
+  workflow_dispatch:  # triggered manually via the GitHub Actions tab or an API call
 
 jobs:
   update_credits:

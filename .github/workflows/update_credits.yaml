@@ -1,7 +1,7 @@
 name: Update Movie Credits Workflow
 
 on:
-  workflow_dispatch:  # Triggered manually via the GitHub Actions tab or an API call
+  workflow_dispatch:
 
 jobs:
   update_credits:
@@ -9,10 +9,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3  # Updated to v3
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4  # Updated to v4
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
@@ -21,32 +21,30 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Fetch team and credits from Node API
       - name: Fetch team and credits from Node API
+        id: fetch_team_credits
         run: |
-          echo "progress=Fetching team and credits..." >> $GITHUB_ENV
           curl -s --request GET ${{ secrets.NODE_API_URL }}wrangleImdbIds > team_and_credits.json
-          echo "Step 1 complete: Fetched credits"
+          echo "::set-output name=progress::Fetching team and credits"
 
-      # Step 5: Scrape IMDb for new credits
       - name: Scrape IMDb for new credits
+        id: scrape_imdb
         run: |
-          echo "progress=Scraping IMDb for credits..." >> $GITHUB_ENV
-          python update_barn.py team_and_credits.json  # Passing the file to the script
-          echo "Step 2 complete: Scraped IMDb data"
+          python update_barn.py team_and_credits.json
+          echo "::set-output name=progress::Scraping IMDb for credits"
 
-      # Step 6: Update Node API with new credits
       - name: Update Node API with new credits
+        id: update_api
         run: |
-          echo "progress=Updating database with new credits..." >> $GITHUB_ENV
           curl -X POST ${{ secrets.NODE_API_URL }}updateCredits \
           -H "Content-Type: application/json" \
           --data @new_credits.json > api_response.json
-          echo "progress=Database updated successfully!" >> $GITHUB_ENV
+          echo "::set-output name=progress::Updating database with new credits"
 
-      # Step 7: Set final output with new titles
       - name: Set final output
         id: set_output
         run: |
-          echo "new_titles=$(cat api_response.json | jq -r '.newTitles')" >> $GITHUB_ENV
-          echo "progress=Process completed successfully!" >> $GITHUB_ENV
+          echo "::set-output name=progress::Process completed successfully!"
+
+    outputs:
+      progress: ${{ steps.set_output.outputs.progress }}  # Outputs the progress from the final step

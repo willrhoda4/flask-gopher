@@ -25,13 +25,13 @@ jobs:
         id: fetch_team_credits
         run: |
           curl -s --request GET ${{ secrets.NODE_API_URL }}wrangleImdbIds > team_and_credits.json
-          echo "::set-output name=progress::Fetching team and credits"
+          echo "progress=Fetching team and credits" >> $GITHUB_OUTPUT
 
       - name: Scrape IMDb for new credits
         id: scrape_imdb
         run: |
           python update_barn.py team_and_credits.json
-          echo "::set-output name=progress::Scraping IMDb for credits"
+          echo "progress=Scraping IMDb for credits" >> $GITHUB_OUTPUT
 
       - name: Update Node API with new credits
         id: update_api
@@ -39,12 +39,12 @@ jobs:
           curl -X POST ${{ secrets.NODE_API_URL }}updateCredits \
           -H "Content-Type: application/json" \
           --data @new_credits.json > api_response.json
-          echo "::set-output name=progress::Updating database with new credits"
+          echo "progress=Updating database with new credits" >> $GITHUB_OUTPUT
 
       - name: Set final output
         id: set_output
         run: |
-          echo "::set-output name=progress::Process completed successfully!"
+          echo "progress=Process completed successfully!" >> $GITHUB_OUTPUT
 
     outputs:
-      progress: ${{ steps.set_output.outputs.progress }}  # Outputs the progress from the final step
+      final_progress: ${{ steps.set_output.outputs.progress }}

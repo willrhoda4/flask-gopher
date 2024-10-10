@@ -52,7 +52,7 @@ jobs:
       - name: Scrape IMDb for new credits
         run: |
           echo "Running flicks_handler.py to scrape IMDb credits..."
-          python flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
+          python handlers/flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
         id: scrape_imdb
 
       # Step 7: Process new credits and upload posters (Python script)

@@ -59,7 +59,7 @@ jobs:
       - name: Process new credits and upload posters
         run: |
           echo "Running posters_handler.py to process new credits and upload posters..."
-          python posters_handler.py "$(jq -c '.credits' team_and_credits.json)" "$(jq -c '.unique_films' scrape_imdb)"
+          python handlers/posters_handler.py "$(jq -c '.credits' team_and_credits.json)" "$(jq -c '.unique_films' scrape_imdb)"
         env:
           CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
           CLOUD_KEY: ${{ secrets.CLOUD_KEY }}

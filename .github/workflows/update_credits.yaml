@@ -8,59 +8,73 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code
+      # Step 1: Add an initial echo statement to confirm the workflow has started
+      - name: Start Workflow Debugging
+        run: |
+          echo "Starting the Update Movie Credits Workflow"
+          echo "Checking environment variables..."
+          echo "NODE_API_URL: ${{ secrets.NODE_API_URL }}"
+          echo "API_TOKEN: ${{ secrets.API_TOKEN }}"
+          echo "CLOUD_NAME: ${{ secrets.CLOUD_NAME }}"
+          echo "Workflow has begun."
+
+      # Step 2: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python
+      # Step 3: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      # Step 3: Install dependencies
+      # Step 4: Install Python dependencies
       - name: Install Python dependencies
         run: |
+          echo "Installing Python dependencies..."
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 1: Fetch IMDb IDs from the Node API (Curl)
+      # Step 5: Fetch IMDb IDs from the Node API (Curl) with timeout and verbose logging
       - name: Fetch IMDb IDs from API
         env:
-          NODE_API_URL: ${{ secrets.NODE_API_URL }}  # The API base URL (e.g., https://your-api.com/)
-          API_TOKEN: ${{ secrets.API_TOKEN }}        # The token for authenticating the request
+          NODE_API_URL: ${{ secrets.NODE_API_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
         run: |
-          curl -H "Authorization: Bearer $API_TOKEN" \
+          echo "Fetching IMDb IDs from API..."
+          curl --max-time 60 -v -H "Authorization: Bearer $API_TOKEN" \
                -H "Content-Type: application/json" \
                "$NODE_API_URL/wrangleImdbIds" > team_and_credits.json
           echo "Fetched IMDb IDs and credits:"
-          cat team_and_credits.json  # Log output for debugging
+          cat team_and_credits.json
 
-      # Step 2: Scrape IMDb for new credits (Python script)
+      # Step 6: Scrape IMDb for new credits (Python script)
       - name: Scrape IMDb for new credits
         run: |
-          python flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"  # Extracts team IMDb IDs from the JSON file
+          echo "Running flicks_handler.py to scrape IMDb credits..."
+          python flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
         id: scrape_imdb
-     
-      # Step 3: Process new credits and upload posters (Python script)
+
+      # Step 7: Process new credits and upload posters (Python script)
       - name: Process new credits and upload posters
         run: |
+          echo "Running posters_handler.py to process new credits and upload posters..."
           python posters_handler.py "$(jq -c '.credits' team_and_credits.json)" "$(jq -c '.unique_films' scrape_imdb)"
         env:
           CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
           CLOUD_KEY: ${{ secrets.CLOUD_KEY }}
           CLOUD_SECRET: ${{ secrets.CLOUD_SECRET }}
 
-      # Step 4: Update database with new credits (Curl)
+      # Step 8: Update Node API with new credits (Curl)
       - name: Update Node API with new credits
         env:
-          NODE_API_URL: ${{ secrets.NODE_API_URL }}  # The API base URL
-          API_TOKEN: ${{ secrets.API_TOKEN }}        # The token for authenticating the request
+          NODE_API_URL: ${{ secrets.NODE_API_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
         run: |
-          curl -X POST "$NODE_API_URL/updateCredits" \
+          echo "Updating credits in the Node API..."
+          curl --max-time 60 -v -X POST "$NODE_API_URL/updateCredits" \
                -H "Authorization: Bearer $API_TOKEN" \
                -H "Content-Type: application/json" \
                --data @new_credits.json > api_response.json
           echo "Response from updating credits:"
-          cat api_response.json  # Log output for debugging
-
+          cat api_response.json

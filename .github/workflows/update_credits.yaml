@@ -22,13 +22,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-       # Step 2.5: Install Playwright (browsers and dependencies)
-      - name: Install Playwright Browsers
-        uses: microsoft/playwright-github-action@v1
-        #with:
-          # ^^^^ optional: you can specify which browsers to install (chromium, firefox, webkit)
-          # by default, it installs all three browsers
-          # browsers: 'chromium'
+      
           
       # Step 3: Set up Python
       - name: Set up Python
@@ -42,6 +36,19 @@ jobs:
           echo "Installing Python dependencies..."
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      # Step 4.5: Install Playwright browsers explicitly
+      - name: Install Playwright Browsers
+        run: |
+          echo "Installing Playwright browsers..."
+          npx playwright install
+
+      # Step 4.55:Debugging
+      - name: Debug Playwright Browser Path
+        run: |
+          echo "Listing Playwright installed files:"
+          ls -R /home/runner/.cache/ms-playwright/
+
 
       # Step 5: Fetch IMDb IDs from the Node API (Curl) with timeout and verbose logging
       - name: Fetch IMDb IDs from API

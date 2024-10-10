@@ -20,31 +20,34 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          echo "Dependencies installed"
 
       - name: Fetch team and credits from Node API
         id: fetch_team_credits
         run: |
-          curl -s --request GET ${{ secrets.NODE_API_URL }}wrangleImdbIds > team_and_credits.json
+          curl -v --request GET "${{ secrets.NODE_API_URL }}/wrangleImdbIds" > team_and_credits.json
+          echo "team_and_credits.json content:"
+          cat team_and_credits.json
           echo "progress=Fetching team and credits" >> $GITHUB_OUTPUT
 
       - name: Scrape IMDb for new credits
         id: scrape_imdb
         run: |
           python update_barn.py team_and_credits.json
+          echo "IMDb scraping completed"
           echo "progress=Scraping IMDb for credits" >> $GITHUB_OUTPUT
 
       - name: Update Node API with new credits
         id: update_api
         run: |
-          curl -X POST ${{ secrets.NODE_API_URL }}updateCredits \
+          curl -X POST "${{ secrets.NODE_API_URL }}/updateCredits" \
           -H "Content-Type: application/json" \
           --data @new_credits.json > api_response.json
+          echo "api_response.json content:"
+          cat api_response.json
           echo "progress=Updating database with new credits" >> $GITHUB_OUTPUT
 
       - name: Set final output
         id: set_output
         run: |
           echo "progress=Process completed successfully!" >> $GITHUB_OUTPUT
-
-    outputs:
-      final_progress: ${{ steps.set_output.outputs.progress }}

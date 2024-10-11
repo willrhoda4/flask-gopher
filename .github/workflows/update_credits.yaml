@@ -40,7 +40,7 @@ jobs:
             libhyphen0 \
             libflite1 \
             libgles2-mesa \
-            libx264-155 \
+            libx264.dev \
             gstreamer1.0-libav \
             gstreamer1.0-plugins-bad \
             gstreamer1.0-plugins-good \

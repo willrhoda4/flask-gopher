@@ -26,7 +26,7 @@ def fetch_stunt_credits(member):
     """
     with sync_playwright() as playwright:
         # Launch browser in headless mode
-        browser = playwright.chromium.launch(headless=True)
+        browser = playwright.chromium.launch(headless=False)
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             extra_http_headers={

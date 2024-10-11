@@ -8,7 +8,7 @@ import re
 import json
 import argparse  # for argument parsing
 import requests
-from   playwright.sync_api import sync_playwright
+from   playwright.sync_api import sync_playwright, TimeoutError
 from   bs4                 import BeautifulSoup     as bs
 
 

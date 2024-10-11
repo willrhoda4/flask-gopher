@@ -40,12 +40,18 @@ jobs:
             libhyphen0 \
             libflite1 \
             libgles2-mesa \
-            libx264.dev \
             gstreamer1.0-libav \
             gstreamer1.0-plugins-bad \
             gstreamer1.0-plugins-good \
             gstreamer1.0-plugins-ugly
-      
+
+      # Step 2.55: install libx264-155 from old ubuntu repo   
+      - name: Install libx264-155 from Ubuntu 20.04
+        run: |
+         sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu focal main universe'
+         sudo apt-get update
+         sudo apt-get install -y libx264-155
+
           
       # Step 3: Set up Python
       - name: Set up Python

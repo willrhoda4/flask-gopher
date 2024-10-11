@@ -22,6 +22,29 @@ jobs:
       # Step 2: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      # Step 2.5: Install missing dependencies for Playwright browsers
+      - name: Install system dependencies for Playwright
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwoff1 \
+            libopus0 \
+            libvpx7 \
+            libevent-2.1-7 \
+            libgstreamer-plugins-base1.0-0 \
+            libgstreamer1.0-0 \
+            libgstreamer-gl1.0-0 \
+            libgstreamer-plugins-bad1.0-0 \
+            libharfbuzz-icu0 \
+            libhyphen0 \
+            libflite1 \
+            libgles2-mesa \
+            libx264-155 \
+            gstreamer1.0-libav \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-ugly
       
           
       # Step 3: Set up Python
@@ -41,7 +64,28 @@ jobs:
 
       # Step 4.5: Install Playwright browsers
       - name: Install Playwright Browsers
+        run: |  # Step 2: Install missing dependencies for Playwright browsers
+      - name: Install system dependencies for Playwright
         run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwoff1 \
+            libopus0 \
+            libvpx7 \
+            libevent-2.1-7 \
+            libgstreamer-plugins-base1.0-0 \
+            libgstreamer1.0-0 \
+            libgstreamer-gl1.0-0 \
+            libgstreamer-plugins-bad1.0-0 \
+            libharfbuzz-icu0 \
+            libhyphen0 \
+            libflite1 \
+            libgles2-mesa \
+            libx264-155 \
+            gstreamer1.0-libav \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-ugly
           echo "Installing Playwright browsers..."
           python -m playwright install
 

@@ -18,10 +18,10 @@ jobs:
           echo "CLOUD_NAME: ${{ secrets.CLOUD_NAME }}"
           echo "Workflow has begun."
 
+
       # Step 2: Checkout the code
       - name: Checkout Code
         uses: actions/checkout@v3
-
       
           
       # Step 3: Set up Python
@@ -30,6 +30,7 @@ jobs:
         with:
           python-version: '3.x'
 
+
       # Step 4: Install Python dependencies
       - name: Install Python dependencies
         run: |
@@ -37,19 +38,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4.5: Install Playwright browsers explicitly
+
+      # Step 4.5: Install Playwright browsers
       - name: Install Playwright Browsers
         run: |
           echo "Installing Playwright browsers..."
-          npx playwright install
+          python -m playwright install
 
-      # Step 4.55:Debugging
-      - name: Debug Playwright Browser Path
-        run: |
-          echo "Listing Playwright installed files:"
-          ls -R /home/runner/.cache/ms-playwright/
-
-
+     
       # Step 5: Fetch IMDb IDs from the Node API (Curl) with timeout and verbose logging
       - name: Fetch IMDb IDs from API
         env:
@@ -63,12 +59,14 @@ jobs:
           echo "Fetched IMDb IDs and credits:"
           cat team_and_credits.json
 
+
       # Step 6: Scrape IMDb for new credits (Python script)
       - name: Scrape IMDb for new credits
         run: |
           echo "Running flicks_handler.py to scrape IMDb credits..."
           python handlers/flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
         id: scrape_imdb
+
 
       # Step 7: Process new credits and upload posters (Python script)
       - name: Process new credits and upload posters
@@ -79,6 +77,7 @@ jobs:
           CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
           CLOUD_KEY: ${{ secrets.CLOUD_KEY }}
           CLOUD_SECRET: ${{ secrets.CLOUD_SECRET }}
+
 
       # Step 8: Update Node API with new credits (Curl)
       - name: Update Node API with new credits

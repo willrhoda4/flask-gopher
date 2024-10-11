@@ -29,13 +29,14 @@ def fetch_stunt_credits(member):
         browser = playwright.chromium.launch(headless=False)
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
+            locale="en-US",
             extra_http_headers={
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Upgrade-Insecure-Requests': '1',
-                'DNT': '1',
-                'Referer': 'https://www.google.com/'
+                "accept-language": "en-US,en;q=0.9",
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
             }
-        )
+)
+
         page = context.new_page()
 
         url = f"https://www.imdb.com/name/{member}/?showAllCredits=true"
@@ -43,6 +44,7 @@ def fetch_stunt_credits(member):
         try:
             # Open the IMDb page with extended timeout and network idle wait
             page.goto(url, wait_until="networkidle", timeout=90000)
+            page.wait_for_timeout(5000)  # Wait an extra 5 seconds for everything to stabilize
             print(f"Fetching credits for {member}...")
 
             # Scroll through the page to trigger dynamic loading
@@ -67,7 +69,6 @@ def fetch_stunt_credits(member):
                 return li_elements
             else:
                 print("No elements found on the page.")
-                print(page.content())  # Log the entire page content for debugging
                 return []
 
         except playwright.TimeoutError:

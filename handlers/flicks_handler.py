@@ -65,6 +65,7 @@ def fetch_stunt_credits(member):
                 return li_elements
             else:
                 print("No elements found on the page.")
+                print(page.content())  # Log the entire page content for debugging
                 return []
 
         except Exception as e:
@@ -81,7 +82,7 @@ def fetch_stunt_credits(member):
 def get_flicks(team):
     """Fetch stunt credits for each team member in the provided IMDb ID list.
 
-    Args:
+    Args: 
         team (list): List of IMDb IDs (e.g., ['nm1819605', 'nm0743332'])
 
     Returns:

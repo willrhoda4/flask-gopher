@@ -51,7 +51,7 @@ def update_credits_on_node(credits, api_url, token):
 if __name__ == "__main__":
    
     # fetch the Node API URL and GitHub token from environment variables (these will be set in GitHub Actions)
-    node_api_url = os.getenv('NODE_API_URL', 'http://localhost:5000')  # Default API URL
+    node_api_url = os.getenv('NODE_API_URL', 'http://localhost:5000')  # Default API URL    
     github_token = os.getenv('GITHUB_TOKEN')  # Token for secure access to the Node API
 
     # simulated new credits from IMDb (replace this with the actual scraped data)

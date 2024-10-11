@@ -15,6 +15,8 @@ load_dotenv()                     # load environment variables from the .env fil
 # function to fetch IMDb IDs from the Node API
 def fetch_imdb_ids(api_url, token):
 
+    print('Fetching IMDb IDs for the team...')
+
     # set up the headers with the authorization token for secure API access
     headers = {
         'Authorization': f'Bearer {token}',  # insert the token in the Authorization header

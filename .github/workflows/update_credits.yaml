@@ -28,6 +28,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            xvfb \
             libwoff1 \
             libopus0 \
             libvpx7 \
@@ -115,7 +116,7 @@ jobs:
       - name: Scrape IMDb for new credits
         run: |
           echo "Running flicks_handler.py to scrape IMDb credits..."
-          python handlers/flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
+          xvfb-run python handlers/flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
         id: scrape_imdb
 
 

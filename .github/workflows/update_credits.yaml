@@ -1,52 +1,145 @@
 name: Update Movie Credits Workflow
 
 on:
-  workflow_dispatch:  # Triggered manually via the GitHub Actions tab or an API call
+  workflow_dispatch:
 
 jobs:
   update_credits:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3  # Updated to v3
+      # Step 1: Add an initial echo statement to confirm the workflow has started
+      - name: Start Workflow Debugging
+        run: |
+          echo "Starting the Update Movie Credits Workflow"
+          echo "Checking environment variables..."
+          echo "NODE_API_URL: ${{ secrets.NODE_API_URL }}"
+          echo "API_TOKEN: ${{ secrets.API_TOKEN }}"
+          echo "CLOUD_NAME: ${{ secrets.CLOUD_NAME }}"
+          echo "Workflow has begun."
 
+
+      # Step 2: Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2.5: Install missing dependencies for Playwright browsers
+      - name: Install system dependencies for Playwright
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwoff1 \
+            libopus0 \
+            libvpx7 \
+            libevent-2.1-7 \
+            libgstreamer-plugins-base1.0-0 \
+            libgstreamer1.0-0 \
+            libgstreamer-gl1.0-0 \
+            libgstreamer-plugins-bad1.0-0 \
+            libharfbuzz-icu0 \
+            libhyphen0 \
+            libflite1 \
+            libgles2-mesa \
+            libmanette-0.2-0 \
+            gstreamer1.0-libav \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-ugly
+
+      # Step 2.55: install libx264-155 from old ubuntu repo   
+      - name: Install libx264-155 from Ubuntu 20.04
+        run: |
+         sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu focal main universe'
+         sudo apt-get update
+         sudo apt-get install -y libx264-155
+
+          
+      # Step 3: Set up Python
       - name: Set up Python
-        uses: actions/setup-python@v4  # Updated to v4
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
+
+      # Step 4: Install Python dependencies
+      - name: Install Python dependencies
         run: |
+          echo "Installing Python dependencies..."
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Fetch team and credits from Node API
-      - name: Fetch team and credits from Node API
-        run: |
-          echo "progress=Fetching team and credits..." >> $GITHUB_ENV
-          curl -s --request GET ${{ secrets.NODE_API_URL }}wrangleImdbIds > team_and_credits.json
-          echo "Step 1 complete: Fetched credits"
 
-      # Step 5: Scrape IMDb for new credits
+      # Step 4.5: Install Playwright browsers
+      - name: Install Playwright Browsers
+        run: |  # Step 2: Install missing dependencies for Playwright browsers
+      - name: Install system dependencies for Playwright
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwoff1 \
+            libopus0 \
+            libvpx7 \
+            libevent-2.1-7 \
+            libgstreamer-plugins-base1.0-0 \
+            libgstreamer1.0-0 \
+            libgstreamer-gl1.0-0 \
+            libgstreamer-plugins-bad1.0-0 \
+            libharfbuzz-icu0 \
+            libhyphen0 \
+            libflite1 \
+            libgles2-mesa \
+            libx264-155 \
+            gstreamer1.0-libav \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-ugly
+          echo "Installing Playwright browsers..."
+          python -m playwright install
+
+     
+      # Step 5: Fetch IMDb IDs from the Node API (Curl) with timeout and verbose logging
+      - name: Fetch IMDb IDs from API
+        env:
+          NODE_API_URL: ${{ secrets.NODE_API_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+        run: |
+          echo "Fetching IMDb IDs from API..."
+          curl --max-time 60 -v -H "Authorization: Bearer $API_TOKEN" \
+               -H "Content-Type: application/json" \
+               "$NODE_API_URL/wrangleImdbIds" > team_and_credits.json
+          echo "Fetched IMDb IDs and credits:"
+          cat team_and_credits.json
+
+
+      # Step 6: Scrape IMDb for new credits (Python script)
       - name: Scrape IMDb for new credits
         run: |
-          echo "progress=Scraping IMDb for credits..." >> $GITHUB_ENV
-          python update_barn.py team_and_credits.json  # Passing the file to the script
-          echo "Step 2 complete: Scraped IMDb data"
+          echo "Running flicks_handler.py to scrape IMDb credits..."
+          python handlers/flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
+        id: scrape_imdb
 
-      # Step 6: Update Node API with new credits
+
+      # Step 7: Process new credits and upload posters (Python script)
+      - name: Process new credits and upload posters
+        run: |
+          echo "Running posters_handler.py to process new credits and upload posters..."
+          python handlers/posters_handler.py "$(jq -c '.credits' team_and_credits.json)" "$(jq -c '.unique_films' scrape_imdb)"
+        env:
+          CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
+          CLOUD_KEY: ${{ secrets.CLOUD_KEY }}
+          CLOUD_SECRET: ${{ secrets.CLOUD_SECRET }}
+
+
+      # Step 8: Update Node API with new credits (Curl)
       - name: Update Node API with new credits
+        env:
+          NODE_API_URL: ${{ secrets.NODE_API_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
         run: |
-          echo "progress=Updating database with new credits..." >> $GITHUB_ENV
-          curl -X POST ${{ secrets.NODE_API_URL }}updateCredits \
-          -H "Content-Type: application/json" \
-          --data @new_credits.json > api_response.json
-          echo "progress=Database updated successfully!" >> $GITHUB_ENV
-
-      # Step 7: Set final output with new titles
-      - name: Set final output
-        id: set_output
-        run: |
-          echo "new_titles=$(cat api_response.json | jq -r '.newTitles')" >> $GITHUB_ENV
-          echo "progress=Process completed successfully!" >> $GITHUB_ENV
+          echo "Updating credits in the Node API..."
+          curl --max-time 60 -v -X POST "$NODE_API_URL/updateCredits" \
+               -H "Authorization: Bearer $API_TOKEN" \
+               -H "Content-Type: application/json" \
+               --data @new_credits.json > api_response.json
+          echo "Response from updating credits:"
+          cat api_response.json

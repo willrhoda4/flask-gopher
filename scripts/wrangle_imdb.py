@@ -42,11 +42,11 @@ def main():
     
     try:
         # fetch the Node API URL and GitHub token from environment variables (these will be set in GitHub Actions)
-        api_url      = os.getenv('NODE_API_URL', 'http://localhost:5000/')  # default API URL
+        api_url      = os.getenv('NODE_API_URL', 'http://localhost:5000')  # default API URL
         github_token = os.getenv('GITHUB_TOKEN')                            # token for secure access to the Node API
 
         # fetch the IMDb IDs from the Node API and return as a tuple
-        return fetch_imdb_ids(f"{api_url}wrangleImdbIds", github_token)
+        return fetch_imdb_ids(f"{api_url}/wrangleImdbIds", github_token)
 
     except Exception as e:
         # if an error occurs, print the error (this will show up in the GitHub Actions log)

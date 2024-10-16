@@ -1,11 +1,18 @@
+
+
+
+
+
 import os
-from flask import Flask
-from dotenv import load_dotenv
+from   flask  import Flask
+from   dotenv import load_dotenv
 import cloudinary
 
 # Importing handlers
-from handlers.flicks_handler import get_flicks
-from handlers.posters_handler import get_poster
+from handlers.flicks_handler  import get_flicks
+from handlers.posters_handler import fetch_and_upload_poster
+from handlers.update_database import update_database
+from scripts.stealth_test     import stealth_test
 
 # Load environment variables from .env file
 load_dotenv()
@@ -33,9 +40,15 @@ def flicks():
 
 @app.route("/getPoster", methods=["POST"])
 def poster():
-    return get_poster()
+    return fetch_and_upload_poster()
 
+@app.route('/updateDb', methods=['GET'])
+def update():
+    return update_database()
 
+@app.route('/stealthTest', methods=['GET'])
+def stealth():
+    return stealth_test()
 
 
 

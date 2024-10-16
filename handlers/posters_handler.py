@@ -25,6 +25,26 @@ cloudinary.config(
 )
 
 
+
+def format_name(name, imdb_id):
+    """
+    Cleans the name by replacing spaces, apostrophes, ampersands, and question marks, 
+    then appends the IMDb ID to form the formatted name.
+    """
+    # Define a translation table
+    translation_table = str.maketrans({
+        ' ': '_',   # Replace spaces with underscores
+        "'": '',    # Remove apostrophes
+        '&': 'and', # Replace '&' with 'and'
+        '?': ''     # Remove question marks
+    })
+    
+    # Apply translation and append IMDb ID
+    formatted_name = name.translate(translation_table) + f"_{imdb_id}"
+    return formatted_name
+
+
+
 # helper function to fetch poster info and upload to Cloudinary
 def fetch_and_upload_poster(imdb_id):
     """
@@ -53,7 +73,7 @@ def fetch_and_upload_poster(imdb_id):
         if film_json:
             json_dict      = json.loads(film_json.string)
             name           = json_dict.get("name", "")
-            formatted_name = name.replace(" ", "_") + f"_{imdb_id}"
+            formatted_name = format_name(name, imdb_id)
             image_url      = json_dict.get("image", "no poster")
 
             # If an image is found, upload to Cloudinary
@@ -70,11 +90,11 @@ def fetch_and_upload_poster(imdb_id):
 
     except requests.exceptions.RequestException as e:
         print(f"RequestException: {e}")
-        return {"error": f"RequestException: {e}", "imdb_id": imdb_id}
+        return None
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        return {"error": f"An error occurred: {e}", "imdb_id": imdb_id}
+        return None
 
 
 # Main function for processing IMDb credits
@@ -96,8 +116,25 @@ def process_new_credits(db_credits, imdb_credits):
             print("Both 'db_credits' and 'imdb_credits' must be provided.")
             return []
 
-        # identify credits that are in IMDb credits but not in the database (new credits)
-        new_credits = list(imdb_credits.difference(db_credits))
+        print("before")
+        print(db_credits[0])
+        print(imdb_credits[0])
+        
+        db_credits = [ credit['imdb_id'] for credit in db_credits ]
+        
+        print("after")
+        print(db_credits[0])
+        print(imdb_credits[0])
+        
+      
+        # Identify new credits not in db_credits
+        new_credits = [credit for credit in imdb_credits if credit not in db_credits]
+
+
+        print(f"db_credits: {len(db_credits)}")
+        print(f"imdb_credits: {len(imdb_credits)}")
+        print(f"new_credits: {len(new_credits)}")
+        print(f"new_credits: {new_credits}")
 
         if not new_credits:
             print("No new credits to process.")
@@ -106,10 +143,11 @@ def process_new_credits(db_credits, imdb_credits):
         print(f"New credits to process: {new_credits}")
 
         # process each new credit and fetch the poster
+        # check if the operation was successful before appending the result
         results = []
         for imdb_id in new_credits:
             result = fetch_and_upload_poster(imdb_id)
-            results.append(result)
+            if result: results.append(result)
 
         return results
 

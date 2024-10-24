@@ -102,45 +102,12 @@ jobs:
       - name: Fetch IMDb IDs from API
         env:
           NODE_API_URL: ${{ secrets.NODE_API_URL }}
-          API_TOKEN: ${{ secrets.API_TOKEN }}
-        run: |
-          echo "Fetching IMDb IDs from API..."
-          curl --max-time 60 -v -H "Authorization: Bearer $API_TOKEN" \
-               -H "Content-Type: application/json" \
-               "$NODE_API_URL/wrangleImdbIds" > team_and_credits.json
-          echo "Fetched IMDb IDs and credits:"
-          cat team_and_credits.json
-
-
-      # Step 6: Scrape IMDb for new credits (Python script)
-      - name: Scrape IMDb for new credits
-        run: |
-          echo "Running flicks_handler.py to scrape IMDb credits..."
-          xvfb-run python handlers/flicks_handler.py --team_ids "$(jq -c '.team' team_and_credits.json)"
-        id: scrape_imdb
-
-
-      # Step 7: Process new credits and upload posters (Python script)
-      - name: Process new credits and upload posters
-        run: |
-          echo "Running posters_handler.py to process new credits and upload posters..."
-          python handlers/posters_handler.py "$(jq -c '.credits' team_and_credits.json)" "$(jq -c '.unique_films' scrape_imdb)"
-        env:
-          CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
-          CLOUD_KEY: ${{ secrets.CLOUD_KEY }}
+          API_TOKEN:    ${{ secrets.API_TOKEN    }}
+          CLOUD_NAME:   ${{ secrets.CLOUD_NAME   }}
+          CLOUD_KEY:    ${{ secrets.CLOUD_KEY    }}
           CLOUD_SECRET: ${{ secrets.CLOUD_SECRET }}
-
-
-      # Step 8: Update Node API with new credits (Curl)
-      - name: Update Node API with new credits
-        env:
-          NODE_API_URL: ${{ secrets.NODE_API_URL }}
-          API_TOKEN: ${{ secrets.API_TOKEN }}
         run: |
-          echo "Updating credits in the Node API..."
-          curl --max-time 60 -v -X POST "$NODE_API_URL/updateCredits" \
-               -H "Authorization: Bearer $API_TOKEN" \
-               -H "Content-Type: application/json" \
-               --data @new_credits.json > api_response.json
-          echo "Response from updating credits:"
-          cat api_response.json
+          echo "updating the databse..."
+          python handlers/update_database.py
+
+       

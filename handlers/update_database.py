@@ -67,3 +67,6 @@ def update_database():
         return {"error": str(e)}, 500
 
 
+if __name__ == "__main__":
+    result = update_database()
+    print(result)

@@ -67,7 +67,7 @@ def fetch_stunt_credits(member):
     
     with sync_playwright() as playwright:
 
-        browser = playwright.chromium.launch(headless=False, args=args)
+        browser = playwright.chromium.launch(headless=True, args=args)
         context = browser.new_context(
             viewport=None,  # set viewport to None to make it look like a real user's window
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",

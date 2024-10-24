@@ -108,6 +108,6 @@ jobs:
           CLOUD_SECRET: ${{ secrets.CLOUD_SECRET }}
         run: |
           echo "updating the databse..."
-          python handlers/update_databse.py
+          python handlers/update_database.py
 
        

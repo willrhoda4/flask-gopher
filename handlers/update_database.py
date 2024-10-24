@@ -18,34 +18,40 @@ import cloudinary.uploader
 
 # Your Node API URL and token, dynamically fetched
 node_api_url = os.getenv('NODE_API_URL', 'http://localhost:5000')
-github_token = os.getenv('GITHUB_TOKEN')
+github_token = os.getenv('API_TOKEN')
 
 
 def update_database():
-
     try:
-    
-        # step 1: Fetch IMDb IDs
+        print("Fetching IMDb IDs...")
         team_ids, db_credits = fetch_imdb_ids(f"{node_api_url}/wrangleImdbIds", github_token)
         if not team_ids:
-            return jsonify({"error": "Failed to fetch IMDb IDs"}), 500
+            print("Failed to fetch IMDb IDs")
+            return {"error": "Failed to fetch IMDb IDs"}, 500
+        
+        print(f"Fetched team IDs: {team_ids}")
 
-        # step 2: Fetch stunt credits for the team
+        # Fetch stunt credits for the team
+        print("Fetching stunt credits...")
         total_credits, unique_films = get_flicks(team_ids)
 
-        # step 3: Process posters for new credits
+        # Process posters for new credits
+        print("Processing new credits...")
         new_credits_info = process_new_credits(db_credits, unique_films)
 
-        # step 4: Send updated credits to Node API
+        # Send updated credits to Node API
+        print("Sending updated credits to Node API...")
         update_credits_on_node(new_credits_info, node_api_url, github_token)
 
-        return jsonify({
+        return {
             "status": "success",
             "total_credits": total_credits,
             "unique_films": unique_films,
             "new_posters": new_credits_info
-        })
+        }
     
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error: {str(e)}")
+        return {"error": str(e)}, 500
+
 

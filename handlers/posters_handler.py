@@ -40,7 +40,7 @@ def format_name(name, imdb_id):
     })
     
     # Apply translation and append IMDb ID
-    formatted_name = name.translate(translation_table) + f"_{imdb_id}"
+    formatted_name = name.replace("&apos;", "").translate(translation_table) + f"_{imdb_id}"
     return formatted_name
 
 

@@ -4,13 +4,25 @@
 
 
 
+
+import sys
+import os
+
+# dynamically add the project root to sys.path
+current_dir  = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, '..'))
+
+if project_root not in sys.path: sys.path.append(project_root)
+
+
+
+
 from flask                    import Flask, jsonify
 from scripts.wrangle_imdb     import fetch_imdb_ids
 from handlers.flicks_handler  import get_flicks
 from handlers.posters_handler import process_new_credits
 from scripts.update_credits   import update_credits_on_node
 
-import os
 import cloudinary.uploader
 
 

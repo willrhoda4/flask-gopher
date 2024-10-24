@@ -1,7 +1,10 @@
 name: Update Movie Credits Workflow
 
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 1 1 * *'  # At 1:00 AM on the 1st of every month (UTC)
+  workflow_dispatch:  # Keep this to allow manual runs as well
+
 
 jobs:
   update_credits:

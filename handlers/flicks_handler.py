@@ -89,7 +89,7 @@ def fetch_stunt_credits(member):
         # after a delay determined by page.goto's timeout parameter
         try:
             print(f"navigating to imdb page for {member}...")
-            page.goto(url, timeout=6000)
+            page.goto(url, timeout=15000)
 
         except Exception as e:
             print(f"assuming the page is loaded and continuing...")

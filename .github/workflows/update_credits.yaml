@@ -8,8 +8,7 @@ on:
 
 jobs:
   update_credits:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-22.04
     steps:
       # Step 1: Add an initial echo statement to confirm the workflow has started
       - name: Start Workflow Debugging
